@@ -1,6 +1,7 @@
+using DeliveryRushExam.Data;
+using DeliveryRushExam.UGS;
 using System;
 using System.Threading.Tasks;
-using DeliveryRushExam.Data;
 using UnityEngine;
 
 namespace DeliveryRushExam.Save
@@ -11,17 +12,28 @@ namespace DeliveryRushExam.Save
 
         public event Action<PlayerProgressData> ProgressLoaded;
 
-        private LocalSaveService localSaveService;
+        private ISaveService saveService;
 
-        private async void Awake()
+
+        private async void Start()
         {
-            localSaveService = new LocalSaveService();
+            UgsInitializer ugsInitializer = FindFirstObjectByType<UgsInitializer>();
+            if (ugsInitializer != null)
+            {
+                // Esperar a que termine sin volver a inicializar
+                while (!ugsInitializer.IsReady)
+                {
+                    await Task.Yield();
+                }
+            }
+
+            saveService = ServiceLocator.Get<ISaveService>();
             await LoadProgressAsync();
         }
 
         public async Task LoadProgressAsync()
         {
-            CurrentProgress = await localSaveService.LoadAsync();
+            CurrentProgress = await saveService.LoadAsync();
             ProgressLoaded?.Invoke(CurrentProgress);
         }
 
@@ -30,11 +42,9 @@ namespace DeliveryRushExam.Save
             CurrentProgress.bestScore = Mathf.Max(CurrentProgress.bestScore, score);
             CurrentProgress.totalCoins += coins;
             CurrentProgress.completedOrders += completedOrders;
-
-            // Nivel simple para tener un dato extra persistido.
             CurrentProgress.unlockedLevel = Mathf.Max(CurrentProgress.unlockedLevel, 1 + CurrentProgress.completedOrders / 10);
 
-            await localSaveService.SaveAsync(CurrentProgress);
+            await saveService.SaveAsync(CurrentProgress);
         }
     }
 }

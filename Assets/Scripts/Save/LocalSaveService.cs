@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DeliveryRushExam.Save
 {
-    public class LocalSaveService
+    public class LocalSaveService : ISaveService
     {
         private const string ProgressKey = "delivery_rush_progress";
 
@@ -24,10 +24,8 @@ namespace DeliveryRushExam.Save
         {
             progressData.TouchSaveDate();
             string json = JsonUtility.ToJson(progressData);
-
             PlayerPrefs.SetString(ProgressKey, json);
             PlayerPrefs.Save();
-
             return Task.CompletedTask;
         }
     }
