@@ -10,11 +10,14 @@ namespace DeliveryRushExam.UI
         [SerializeField] private float moveSpeed = 55f;
 
         private float age;
+        private ScorePopupPool pool;
 
-        public void Setup(string message)
+        // Pool le pasa su referencia para entregar el popup
+        public void Setup(string message, ScorePopupPool ownerPool)
         {
             age = 0f;
             messageText.text = message;
+            pool = ownerPool;
         }
 
         private void Update()
@@ -30,7 +33,7 @@ namespace DeliveryRushExam.UI
 
             if (age >= lifetime)
             {
-                Destroy(gameObject);
+                pool.Release(this); // trato de evitar Destroy Object
             }
         }
     }
